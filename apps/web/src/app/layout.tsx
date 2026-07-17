@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     default: "quizas",
     template: "%s · quizas",
   },
-  description: "Notes from a developer and a person — quizas",
+  description: "Today I Learned — quizas",
 };
 
 export default function RootLayout({

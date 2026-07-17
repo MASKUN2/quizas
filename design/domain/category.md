@@ -1,6 +1,6 @@
 # Category — aggregate root
 
-A broad, mutually-exclusive bucket for posts (e.g. *개발 / 일상 / 에세이*). See the
+A broad, mutually-exclusive bucket for posts (e.g. *기획 / 일상 / 에세이*). See the
 [full ERD](./README.md).
 
 ```mermaid

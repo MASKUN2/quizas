@@ -69,7 +69,7 @@ multi-author need is explicitly out of scope for this version.
 - **Post** — the central unit of content. A Markdown article with a title, a
   URL slug, optional summary, and a publication state. The aggregate everything
   else hangs off of.
-- **Category** — a broad, mutually-exclusive bucket (e.g. *개발 / 일상 / 에세이*).
+- **Category** — a broad, mutually-exclusive bucket (e.g. *기획 / 일상 / 에세이*).
   Every post belongs to **exactly one**.
 - **Tag** — a cross-cutting topic label. A post may have **many**; a tag spans
   many posts.

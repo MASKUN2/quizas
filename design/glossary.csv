@@ -1,6 +1,6 @@
 term,korean,category,definition
 Post,글,Domain,"The central unit of content: a Markdown article with a title, slug, optional summary, and publication state. The aggregate root everything else hangs off of."
-Category,카테고리,Domain,"A broad, mutually-exclusive bucket (e.g. 개발 / 일상 / 에세이). Every post belongs to exactly one."
+Category,카테고리,Domain,"A broad, mutually-exclusive bucket (e.g. 기획 / 일상 / 에세이). Every post belongs to exactly one."
 Tag,태그,Domain,"A cross-cutting topic label. A post may have many; a tag spans many posts."
 Series,시리즈,Domain,"An ordered collection of posts telling a longer story across multiple parts. A post belongs to at most one series and has a position within it. Optional."
 Comment,댓글,Domain,"A reader's response attached to a published post. May reply to another comment (threaded). Always moderated."
