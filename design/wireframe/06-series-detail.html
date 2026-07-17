@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>홈랩 구축기 · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="brand" href="01-home.html">quizas</a>
+    <div class="nav-right"><a href="01-home.html">Home</a><a href="05-series-index.html">Series</a></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Series detail (<code>/series/{slug}</code>)</h3>
+    <ul>
+      <li>Lists a series' published posts in the author-defined order (§4.4).</li>
+      <li>Back link, "Series" eyebrow, title, description, "N posts total", then the numbered post list.</li>
+      <li>Each entry has a title link and a publish-date · reading-time line.</li>
+    </ul>
+  </aside>
+
+  <a class="back" href="05-series-index.html">← Back to series</a>
+  <p class="eyebrow">Series</p>
+  <h1>홈랩 구축기</h1>
+  <p class="desc">프록스목스에서 k3s, GitOps 배포까지 — 집에서 클러스터를 세운 여정.</p>
+  <p class="total">4 posts total</p>
+
+  <div style="margin-top:1.5rem">
+    <div class="entry"><span class="idx">1</span><div><a href="02-post-detail.html">프록스목스 위에 VM을 올리다</a><div class="sub">2026-06-10 · 5 min</div></div></div>
+    <div class="entry"><span class="idx">2</span><div><a href="02-post-detail.html">본문 이미지 업로드를 MinIO로 옮긴 이야기</a><div class="sub">2026-07-04 · 6 min</div></div></div>
+    <div class="entry"><span class="idx">3</span><div><a href="02-post-detail.html">k3s 2노드로 재구성</a><div class="sub">2026-06-21 · 3 min</div></div></div>
+    <div class="entry"><span class="idx">4</span><div><a href="02-post-detail.html">Argo CD로 GitOps 배포 붙이기</a><div class="sub">2026-07-08 · 7 min</div></div></div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New post · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — New post (<code>/admin/new</code>)</h3>
+    <ul>
+      <li>The form for writing a new post (§4.1).</li>
+      <li>Title (required) · Excerpt (optional) · Category (required) · (series + order, shown only when series exist), the body editor, and status (Draft/Published).</li>
+      <li>The editor's Edit | Preview toggle uses the same renderer as the public post.</li>
+      <li>"Add image" uploads, then inserts <code>![](…)</code> at the cursor (§7.5).</li>
+      <li>The toggle below is demonstrated with minimal JS.</li>
+    </ul>
+  </aside>
+
+  <div class="toolbar">
+    <h1>New post</h1>
+    <div class="actions"><a href="08-post-dashboard.html">← Back</a><button type="button">Log out</button></div>
+  </div>
+
+  <form class="form">
+    <input placeholder="Title" required>
+    <input placeholder="Excerpt (optional)">
+
+    <select required>
+      <option value="" disabled selected>Select category</option>
+      <option>개발</option><option>일상</option><option>에세이</option>
+    </select>
+
+    <div class="row">
+      <select><option value="">No series</option><option>홈랩 구축기</option><option>이 블로그를 만들며</option></select>
+      <input class="w24" type="number" min="0" placeholder="Order">
+    </div>
+
+    <div class="editor">
+      <div class="editor-bar">
+        <span class="seg">
+          <button type="button" class="active" onclick="setMode('edit')">Edit</button>
+          <button type="button" onclick="setMode('preview')">Preview</button>
+        </span>
+        <button type="button" class="img-btn">Add image</button>
+      </div>
+      <textarea class="body" id="body" placeholder="Body (Markdown) — paste, drag, or pick images to add them."></textarea>
+      <div class="preview" id="preview"><em style="opacity:.7">Nothing to preview.</em></div>
+    </div>
+
+    <select><option selected>Draft</option><option>Published</option></select>
+    <button class="btn" type="button">Save</button>
+  </form>
+</main>
+
+<script>
+  function setMode(m){
+    var seg=document.querySelectorAll('.seg button');
+    seg[0].classList.toggle('active',m==='edit');
+    seg[1].classList.toggle('active',m==='preview');
+    var ta=document.getElementById('body'), pv=document.getElementById('preview');
+    if(m==='preview'){
+      ta.style.display='none'; pv.style.display='block';
+      var t=ta.value.trim();
+      pv.innerHTML = t ? t.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]}).replace(/\n/g,'<br>') : '<em style="opacity:.7">Nothing to preview.</em>';
+    }else{ ta.style.display='block'; pv.style.display='none'; }
+  }
+</script>
+</body>
+</html>

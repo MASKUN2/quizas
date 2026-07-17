@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage comments · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Comment moderation (<code>/admin/comments</code>)</h3>
+    <ul>
+      <li>The author reviews comments by state (§4.6).</li>
+      <li>Filter tabs (Pending · Approved · Spam, default Pending) switch <code>?status=</code>.</li>
+      <li>Each item shows author name, the (author-only) email, date, body, and a link to the source post.</li>
+      <li>Actions are Approve · Spam · Set pending · Delete.</li>
+      <li>Email is never shown on public surfaces (§5.4).</li>
+      <li>When there are none: "No comments in this status."</li>
+    </ul>
+  </aside>
+
+  <div class="toolbar">
+    <h1>Manage comments</h1>
+    <div class="actions"><a href="08-post-dashboard.html">← Manage posts</a></div>
+  </div>
+
+  <div class="tabs">
+    <a class="tab active" href="#">Pending</a>
+    <a class="tab" href="#">Approved</a>
+    <a class="tab" href="#">Spam</a>
+  </div>
+
+  <div class="item">
+    <div class="chead"><span class="name">지훈</span><span>jihoon@example.com</span><time datetime="2026-07-05">2026-07-05</time></div>
+    <p class="content">내용 주소 지정 키 아이디어 좋네요. 중복 업로드가 자연스럽게 dedup 되겠어요.</p>
+    <div class="src">Post: <a href="02-post-detail.html">본문 이미지 업로드를 MinIO로 옮긴 이야기</a></div>
+    <div class="ops"><button type="button">Approve</button><button type="button">Spam</button><button type="button">Delete</button></div>
+  </div>
+
+  <div class="item">
+    <div class="chead"><span class="name">익명</span><time datetime="2026-07-06">2026-07-06</time></div>
+    <p class="content">좋은 글 감사합니다. 저도 홈랩 시작해보고 싶네요!</p>
+    <div class="src">Post: <a href="02-post-detail.html">k3s 2노드로 재구성</a></div>
+    <div class="ops"><button type="button">Approve</button><button type="button">Spam</button><button type="button">Delete</button></div>
+  </div>
+</main>
+</body>
+</html>

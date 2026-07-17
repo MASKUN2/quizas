@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>본문 이미지 업로드를 MinIO로 옮긴 이야기 · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="brand" href="01-home.html">quizas</a>
+    <div class="nav-right"><a href="01-home.html">Home</a><a href="05-series-index.html">Series</a></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Post detail (<code>/posts/{slug}</code>)</h3>
+    <ul>
+      <li>Reads a single published post.</li>
+      <li>Back link, meta row, title, tags, (if in a series) a series banner, and the Markdown body, then the comments area.</li>
+      <li>Only approved comments are shown; replies are indented (§5.4).</li>
+      <li>The form takes name (required), email (optional, private), and body (required); on submit it's accepted as pending and confirmed by the top flash.</li>
+      <li>A draft or unknown slug returns 404.</li>
+      <li><strong>When signed in as the author</strong>, an <em>Edit →</em> link appears (top-right) linking straight to this post's editor; readers never see it (§4.1, §5.5).</li>
+    </ul>
+  </aside>
+
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <a class="back" href="01-home.html">← Back to list</a>
+    <a class="back" href="10-edit-post.html">Edit →</a>
+  </div>
+
+  <article>
+    <div class="meta">
+      <a class="chip" href="03-category-archive.html">개발</a>
+      <time datetime="2026-07-04">2026-07-04</time><span>· 6 min</span>
+    </div>
+    <h1>본문 이미지 업로드를 MinIO로 옮긴 이야기</h1>
+    <div class="tags"><a href="04-tag-archive.html">#MinIO</a> <a href="04-tag-archive.html">#Next.js</a></div>
+
+    <a class="banner" href="06-series-detail.html">Series · 홈랩 구축기 · Part 2</a>
+
+    <div class="body">
+      <p>커버 이미지 필드를 걷어내고, 이미지를 <strong>본문 안에서만</strong> 다루기로 했습니다. 붙여넣기 · 드래그 · 파일 선택 중 무엇으로 올려도 커서 위치에 <code>![](…)</code>가 자동으로 삽입됩니다.</p>
+      <h2>업로드 경로</h2>
+      <p>매직바이트로 타입을 검사하고(PNG/JPEG/WebP/GIF, SVG 거부), 내용 해시를 키로 삼아 MinIO에 <code>PUT</code>합니다.</p>
+      <pre><code>POST /admin/api/upload  →  { url: "/images/&lt;sha256&gt;.png" }</code></pre>
+      <p>객체 저장소 주소는 리더에게 노출되지 않고, 이미지는 사이트 도메인 뒤에서 스트리밍됩니다.</p>
+    </div>
+  </article>
+
+  <section class="comments">
+    <h2 style="font-size:1.1rem">Comments 2</h2>
+    <div class="flash">Comment submitted — it'll appear after review.</div>
+
+    <div class="comment">
+      <div class="chead"><span class="name">지훈</span><time datetime="2026-07-05">2026-07-05</time></div>
+      <p>내용 주소 지정 키 아이디어 좋네요. 중복 업로드가 자연스럽게 dedup 되겠어요.</p>
+    </div>
+    <div class="comment reply">
+      <div class="chead"><span class="name">Inho</span><time datetime="2026-07-05">2026-07-05</time></div>
+      <p>맞아요. 게다가 불변이라 엣지 캐시가 아주 잘 먹습니다.</p>
+    </div>
+
+    <form class="form">
+      <div class="row">
+        <input placeholder="Name" required maxlength="50">
+        <input placeholder="Email (optional, private)" type="email">
+      </div>
+      <textarea rows="4" placeholder="Write a comment" required maxlength="5000"></textarea>
+      <button class="btn" type="button">Post comment</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

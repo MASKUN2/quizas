@@ -1,0 +1,841 @@
+openapi: 3.1.0
+info:
+  title: quizas API
+  version: 1.0.0
+  description: >
+    HTTP contract for the quizas backend (NestJS). A single-author personal
+    blog: posts, taxonomy (categories, tags), series, and moderated comments.
+
+    Auth: write/moderation endpoints require the internal shared admin token as
+    an HTTP Bearer credential (`Authorization: Bearer <ADMIN_TOKEN>`). The API is
+    cluster-internal and not publicly exposed; the web app is the only caller.
+
+    Behaviour derived from the implementation — no global route prefix; global
+    ValidationPipe with `whitelist` + `forbidNonWhitelisted` (unknown properties
+    → 400) + `transform`.
+  license:
+    name: Private
+servers:
+  - url: http://localhost:4000
+    description: Local development
+  - url: https://quizas.jwih.org
+    description: Production (cluster-internal; not publicly reachable)
+
+tags:
+  - name: meta
+    description: Liveness / root.
+  - name: posts
+    description: Blog posts. Public reads are draft-aware when a valid admin token is sent.
+  - name: series
+    description: Ordered collections of posts.
+  - name: comments
+    description: Reader comments and author moderation.
+  - name: categories
+    description: Mutually-exclusive post buckets.
+  - name: tags
+    description: Cross-cutting topic labels.
+
+security: []
+
+paths:
+  /:
+    get:
+      tags: [meta]
+      summary: Root greeting
+      operationId: getRoot
+      responses:
+        '200':
+          description: Greeting string
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Hello World!
+
+  /health:
+    get:
+      tags: [meta]
+      summary: Health check
+      operationId: getHealth
+      description: Runs `SELECT 1` against the database.
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, db]
+                properties:
+                  status: { type: string, example: ok }
+                  db: { type: string, example: up }
+
+  /posts:
+    get:
+      tags: [posts]
+      summary: List posts
+      operationId: listPosts
+      description: >
+        Public callers see only PUBLISHED posts, newest first. An admin (valid
+        Bearer token) sees all posts and may filter by `status`. Includes
+        `category` and `tags` relations (not `series`, not `comments`).
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Admin-only filter; ignored for anonymous callers.
+          schema: { $ref: '#/components/schemas/PostStatus' }
+        - name: categoryId
+          in: query
+          required: false
+          schema: { type: string }
+        - name: category
+          in: query
+          required: false
+          description: Category slug.
+          schema: { type: string }
+        - name: tag
+          in: query
+          required: false
+          description: Tag slug.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Matching posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [posts]
+      summary: Create a post
+      operationId: createPost
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePost' }
+      responses:
+        '201':
+          description: Created post (with `category`, `tags`, `series`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /posts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Post id. The GET operation also resolves by slug.
+        schema: { type: string }
+    get:
+      tags: [posts]
+      summary: Get one post
+      operationId: getPost
+      description: >
+        Returns the post with `category`, `tags`, `series`, and its APPROVED
+        `comments` (projected to public fields only). A non-published post is 404
+        for anonymous callers; an admin (Bearer) may read drafts.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The post
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PostDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [posts]
+      summary: Update a post
+      operationId: updatePost
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePost' }
+      responses:
+        '200':
+          description: Updated post (with `category`, `tags`, `series`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Post' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [posts]
+      summary: Delete a post
+      operationId: deletePost
+      description: Cascades to the post's comments.
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /series:
+    get:
+      tags: [series]
+      summary: List series
+      operationId: listSeries
+      description: Each item includes a `_count.posts` total.
+      responses:
+        '200':
+          description: All series
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SeriesWithCount' }
+    post:
+      tags: [series]
+      summary: Create a series
+      operationId: createSeries
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSeries' }
+      responses:
+        '201':
+          description: Created series
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Series' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /series/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Series id. The GET operation also resolves by slug.
+        schema: { type: string }
+    get:
+      tags: [series]
+      summary: Get one series
+      operationId: getSeries
+      description: >
+        Includes its PUBLISHED `posts` in author-defined order (`seriesOrder`
+        asc, then `publishedAt` asc), each with `category` and `tags`.
+      responses:
+        '200':
+          description: The series
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SeriesDetail' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [series]
+      summary: Update a series
+      operationId: updateSeries
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateSeries' }
+      responses:
+        '200':
+          description: Updated series
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Series' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [series]
+      summary: Delete a series
+      operationId: deleteSeries
+      description: Member posts are detached (their `seriesId` is nulled), not deleted.
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /comments:
+    post:
+      tags: [comments]
+      summary: Submit a comment
+      operationId: createComment
+      description: >
+        Public. The target post must exist and be PUBLISHED (else 404). If
+        `parentId` is given, the parent must belong to the same post (else 400).
+        Always created PENDING; the response is projected to `{id,status,createdAt}`.
+      responses:
+        '201':
+          description: Accepted, pending moderation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommentReceipt' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateComment' }
+    get:
+      tags: [comments]
+      summary: List comments (moderation)
+      operationId: listComments
+      description: >
+        Admin only. Full fields (incl. `authorEmail`, `status`) plus the owning
+        post's `{title, slug}`. Newest first. Filterable by `status`/`postId`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/CommentStatus' }
+        - name: postId
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Matching comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CommentAdmin' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /comments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      tags: [comments]
+      summary: Moderate a comment
+      operationId: moderateComment
+      description: Set the comment's status (approve / spam / return to pending).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModerateComment' }
+      responses:
+        '200':
+          description: Updated comment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Comment' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [comments]
+      summary: Delete a comment
+      operationId: deleteComment
+      description: Cascades to the comment's replies.
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /categories:
+    get:
+      tags: [categories]
+      summary: List categories
+      operationId: listCategories
+      description: Ordered by name; each includes `_count.posts`.
+      responses:
+        '200':
+          description: All categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CategoryWithCount' }
+    post:
+      tags: [categories]
+      summary: Create a category
+      operationId: createCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCategory' }
+      responses:
+        '201':
+          description: Created category
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Category id. The GET operation also resolves by slug.
+        schema: { type: string }
+    get:
+      tags: [categories]
+      summary: Get one category
+      operationId: getCategory
+      responses:
+        '200':
+          description: The category (with `_count.posts`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CategoryWithCount' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [categories]
+      summary: Update a category
+      operationId: updateCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateCategory' }
+      responses:
+        '200':
+          description: Updated category
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [categories]
+      summary: Delete a category
+      operationId: deleteCategory
+      description: Rejected with 409 if the category still has posts (reassign first).
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /tags:
+    get:
+      tags: [tags]
+      summary: List tags
+      operationId: listTags
+      description: Ordered by name; each includes `_count.posts`.
+      responses:
+        '200':
+          description: All tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TagWithCount' }
+    post:
+      tags: [tags]
+      summary: Create a tag
+      operationId: createTag
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTag' }
+      responses:
+        '201':
+          description: Created tag
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /tags/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Tag id. The GET operation also resolves by slug.
+        schema: { type: string }
+    get:
+      tags: [tags]
+      summary: Get one tag
+      operationId: getTag
+      responses:
+        '200':
+          description: The tag (with `_count.posts`)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TagWithCount' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [tags]
+      summary: Update a tag
+      operationId: updateTag
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateTag' }
+      responses:
+        '200':
+          description: Updated tag
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tag' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [tags]
+      summary: Delete a tag
+      operationId: deleteTag
+      description: Removes join rows only; posts are untouched.
+      security:
+        - bearerAuth: []
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "The internal shared `ADMIN_TOKEN`, sent as `Authorization: Bearer <token>`."
+
+  responses:
+    BadRequest:
+      description: Validation error (unknown/invalid fields).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid admin token.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found (or a draft hidden from anonymous callers).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Constraint conflict (duplicate slug, or FK still in use).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    PostStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED]
+    CommentStatus:
+      type: string
+      enum: [PENDING, APPROVED, SPAM]
+
+    Error:
+      type: object
+      description: Standard NestJS exception body.
+      required: [statusCode, message]
+      properties:
+        statusCode: { type: integer, example: 404 }
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items: { type: string }
+          example: Post not found
+        error: { type: string, example: Not Found }
+
+    Category:
+      type: object
+      required: [id, slug, name, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        name: { type: string }
+        description:
+          type: [string, 'null']
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CategoryWithCount:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+        - type: object
+          properties:
+            _count:
+              type: object
+              properties:
+                posts: { type: integer }
+
+    Tag:
+      type: object
+      required: [id, slug, name, createdAt]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+    TagWithCount:
+      allOf:
+        - $ref: '#/components/schemas/Tag'
+        - type: object
+          properties:
+            _count:
+              type: object
+              properties:
+                posts: { type: integer }
+
+    Series:
+      type: object
+      required: [id, slug, title, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        description:
+          type: [string, 'null']
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    SeriesWithCount:
+      allOf:
+        - $ref: '#/components/schemas/Series'
+        - type: object
+          properties:
+            _count:
+              type: object
+              properties:
+                posts: { type: integer }
+    SeriesDetail:
+      allOf:
+        - $ref: '#/components/schemas/Series'
+        - type: object
+          properties:
+            posts:
+              type: array
+              items: { $ref: '#/components/schemas/Post' }
+
+    Post:
+      type: object
+      description: A post with its `category` and `tags` (and `series` when returned by create/update/get).
+      required:
+        [id, slug, title, content, status, viewCount, createdAt, updatedAt, categoryId]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        excerpt:
+          type: [string, 'null']
+        content: { type: string, description: Markdown body }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        publishedAt:
+          type: [string, 'null']
+          format: date-time
+        readingTime:
+          type: [integer, 'null']
+        viewCount: { type: integer }
+        categoryId: { type: string }
+        seriesId:
+          type: [string, 'null']
+        seriesOrder:
+          type: [integer, 'null']
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        category: { $ref: '#/components/schemas/Category' }
+        tags:
+          type: array
+          items: { $ref: '#/components/schemas/Tag' }
+        series:
+          oneOf:
+            - $ref: '#/components/schemas/Series'
+            - type: 'null'
+    PostDetail:
+      allOf:
+        - $ref: '#/components/schemas/Post'
+        - type: object
+          properties:
+            comments:
+              type: array
+              description: APPROVED comments only, public projection.
+              items: { $ref: '#/components/schemas/PublicComment' }
+
+    Comment:
+      type: object
+      description: Full comment (moderation view).
+      required: [id, content, authorName, status, postId, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        content: { type: string }
+        authorName: { type: string }
+        authorEmail:
+          type: [string, 'null']
+          format: email
+        status: { $ref: '#/components/schemas/CommentStatus' }
+        postId: { type: string }
+        parentId:
+          type: [string, 'null']
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CommentAdmin:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            post:
+              type: object
+              properties:
+                title: { type: string }
+                slug: { type: string }
+    PublicComment:
+      type: object
+      description: Comment as shown to readers — no email, no status.
+      required: [id, content, authorName, createdAt]
+      properties:
+        id: { type: string }
+        content: { type: string }
+        authorName: { type: string }
+        createdAt: { type: string, format: date-time }
+        parentId:
+          type: [string, 'null']
+    CommentReceipt:
+      type: object
+      description: Projection returned when a reader submits a comment.
+      required: [id, status, createdAt]
+      properties:
+        id: { type: string }
+        status: { $ref: '#/components/schemas/CommentStatus' }
+        createdAt: { type: string, format: date-time }
+
+    CreatePost:
+      type: object
+      required: [title, content, categoryId]
+      properties:
+        title: { type: string, minLength: 1 }
+        content: { type: string, minLength: 1, description: Markdown body }
+        excerpt: { type: string }
+        slug: { type: string, description: Slugified server-side; falls back to the title. }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        categoryId: { type: string }
+        tagIds:
+          type: array
+          items: { type: string }
+        seriesId: { type: string }
+        seriesOrder: { type: integer, minimum: 0 }
+    UpdatePost:
+      type: object
+      description: All CreatePost fields, each optional (PATCH semantics).
+      properties:
+        title: { type: string, minLength: 1 }
+        content: { type: string, minLength: 1 }
+        excerpt: { type: string }
+        slug: { type: string }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        categoryId: { type: string }
+        tagIds:
+          type: array
+          items: { type: string }
+        seriesId:
+          type: [string, 'null']
+          description: null detaches the post from its series.
+        seriesOrder:
+          type: [integer, 'null']
+          minimum: 0
+
+    CreateSeries:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: string }
+        description: { type: string }
+    UpdateSeries:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: string }
+        description: { type: string }
+
+    CreateComment:
+      type: object
+      required: [postId, content, authorName]
+      properties:
+        postId: { type: string }
+        content: { type: string, minLength: 1, maxLength: 5000 }
+        authorName: { type: string, minLength: 1, maxLength: 50 }
+        authorEmail: { type: string, format: email, description: Optional; never exposed publicly. }
+        parentId: { type: string, description: Reply target; must belong to the same post. }
+    ModerateComment:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/CommentStatus' }
+
+    CreateCategory:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        slug: { type: string }
+        description: { type: string }
+    UpdateCategory:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        slug: { type: string }
+        description: { type: string }
+
+    CreateTag:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        slug: { type: string }
+    UpdateTag:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        slug: { type: string }

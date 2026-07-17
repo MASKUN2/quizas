@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개발 · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="brand" href="01-home.html">quizas</a>
+    <div class="nav-right"><a href="01-home.html">Home</a><a href="05-series-index.html">Series</a></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Category archive (<code>/categories/{slug}</code>)</h3>
+    <ul>
+      <li>Shows only published posts in one category (§4.3).</li>
+      <li>Back link, "Category" eyebrow, name (<code>h1</code>), optional description, and the post list.</li>
+      <li>Same layout as the tag archive; only the header copy differs.</li>
+    </ul>
+  </aside>
+
+  <a class="back" href="01-home.html">← Back to list</a>
+  <p class="eyebrow">Category</p>
+  <h1>개발</h1>
+  <p class="desc">코드, 인프라, 그리고 만들며 배운 것들.</p>
+
+  <div class="list">
+    <article class="card">
+      <div class="meta"><a class="chip" href="03-category-archive.html">개발</a><time datetime="2026-07-04">2026-07-04</time><span>· 6 min</span></div>
+      <h2><a href="02-post-detail.html">본문 이미지 업로드를 MinIO로 옮긴 이야기</a></h2>
+      <p class="excerpt">커버 이미지를 걷어내고 본문 이미지 업로드를 MinIO 위에 다시 세운 기록.</p>
+      <div class="tags"><a href="04-tag-archive.html">#MinIO</a> <a href="04-tag-archive.html">#Next.js</a></div>
+    </article>
+    <article class="card">
+      <div class="meta"><a class="chip" href="03-category-archive.html">개발</a><time datetime="2026-05-30">2026-05-30</time><span>· 8 min</span></div>
+      <h2><a href="02-post-detail.html">NestJS에서 슬러그를 한글로 다루기</a></h2>
+      <p class="excerpt">유니코드 슬러그를 URL 끝단까지 안전하게 흘려보내는 법.</p>
+      <div class="tags"><a href="04-tag-archive.html">#NestJS</a></div>
+    </article>
+  </div>
+</main>
+</body>
+</html>

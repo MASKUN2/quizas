@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit post · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Edit post (<code>/admin/posts/{id}/edit</code>)</h3>
+    <ul>
+      <li>Edits every field of an existing post, prefilled (§4.1).</li>
+      <li>Same layout as "New post" but with values filled in.</li>
+      <li>A "Delete this post" button sits below, separated by a top border.</li>
+      <li>On save, a published post redirects to its public page; a Hangul slug must be <code>encodeURIComponent</code>-encoded in the redirect to avoid a header error (the earlier 500 cause).</li>
+    </ul>
+  </aside>
+
+  <div class="toolbar">
+    <h1>Edit post</h1>
+    <div class="actions"><a href="08-post-dashboard.html">← Back</a></div>
+  </div>
+
+  <form class="form">
+    <input value="본문 이미지 업로드를 MinIO로 옮긴 이야기">
+    <input value="사이트 도메인 뒤로 객체 저장소를 숨기고, 이미지를 스트리밍으로 서빙하기.">
+
+    <select><option selected>개발</option><option>일상</option><option>에세이</option></select>
+
+    <div class="row">
+      <select><option value="">No series</option><option selected>홈랩 구축기</option></select>
+      <input class="w24" type="number" min="0" value="2">
+    </div>
+
+    <div class="editor">
+      <div class="editor-bar">
+        <span class="seg">
+          <button type="button" class="active" onclick="setMode('edit')">Edit</button>
+          <button type="button" onclick="setMode('preview')">Preview</button>
+        </span>
+        <button type="button" class="img-btn">Add image</button>
+      </div>
+      <textarea class="body" id="body">커버 이미지 필드를 걷어내고, 이미지를 **본문 안에서만** 다루기로 했습니다.
+
+## 업로드 경로
+매직바이트 검사 후 내용 해시를 키로 MinIO에 PUT.</textarea>
+      <div class="preview" id="preview"></div>
+    </div>
+
+    <select><option>Draft</option><option selected>Published</option></select>
+    <button class="btn" type="button">Save</button>
+  </form>
+
+  <div class="delete-zone"><button type="button">Delete this post</button></div>
+</main>
+
+<script>
+  function setMode(m){
+    var seg=document.querySelectorAll('.seg button');
+    seg[0].classList.toggle('active',m==='edit');
+    seg[1].classList.toggle('active',m==='preview');
+    var ta=document.getElementById('body'), pv=document.getElementById('preview');
+    if(m==='preview'){
+      ta.style.display='none'; pv.style.display='block';
+      var t=ta.value.trim();
+      pv.innerHTML = t ? t.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]}).replace(/\n/g,'<br>') : '<em style="opacity:.7">Nothing to preview.</em>';
+    }else{ ta.style.display='block'; pv.style.display='none'; }
+  }
+</script>
+</body>
+</html>

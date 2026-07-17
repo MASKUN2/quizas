@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage series · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Series management (<code>/admin/series</code>)</h3>
+    <ul>
+      <li>The author creates and deletes series (§4.4).</li>
+      <li>A create form at the top (title required · description optional · "Add series"), the series list below (title link + <code>N posts</code> + Delete).</li>
+      <li>The help text explains that posts are added to a series from the post editor, and that deleting a series does not delete its posts (§5.3).</li>
+      <li>When there are none: "No series yet."</li>
+    </ul>
+  </aside>
+
+  <div class="toolbar">
+    <h1>Manage series</h1>
+    <div class="actions"><a href="08-post-dashboard.html">← Manage posts</a></div>
+  </div>
+
+  <form class="form">
+    <input placeholder="Series title" required>
+    <input placeholder="Description (optional)">
+    <button type="button">Add series</button>
+  </form>
+
+  <div>
+    <div class="item">
+      <div><a href="06-series-detail.html">홈랩 구축기</a><span class="count">4 posts</span></div>
+      <button type="button">Delete</button>
+    </div>
+    <div class="item">
+      <div><a href="06-series-detail.html">이 블로그를 만들며</a><span class="count">3 posts</span></div>
+      <button type="button">Delete</button>
+    </div>
+  </div>
+
+  <p class="help">Add posts to a series from each post's editor by setting the series and order. Deleting a series does not delete its posts; they are only detached from the series.</p>
+</main>
+</body>
+</html>

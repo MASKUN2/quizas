@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quizas — UI screens</title>
+<link rel="stylesheet" href="wireframe.css">
+<style>
+  /* gallery-only: section-heading divider */
+  h2{font-size:1rem;margin-top:2.5rem;border-bottom:1px solid gray;padding-bottom:.4rem}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>quizas — UI screens</h1>
+  <p class="muted">
+    Static-HTML <strong>wireframes</strong> reproducing the app's 12 screens. Each file is
+    self-contained (no external resources) and uses minimal CSS (a single grey border ·
+    system font · no color) to show structure and copy only. The UI is English; sample
+    content stays as authored (Korean). Light/dark follows the OS setting.
+  </p>
+
+  <h2>Public screens</h2>
+  <ol>
+    <li><a href="01-home.html">Home / post list</a> — <code>/</code></li>
+    <li><a href="02-post-detail.html">Post detail</a> — <code>/posts/{slug}</code></li>
+    <li><a href="03-category-archive.html">Category archive</a> — <code>/categories/{slug}</code></li>
+    <li><a href="04-tag-archive.html">Tag archive</a> — <code>/tags/{slug}</code></li>
+    <li><a href="05-series-index.html">Series index</a> — <code>/series</code></li>
+    <li><a href="06-series-detail.html">Series detail</a> — <code>/series/{slug}</code></li>
+  </ol>
+
+  <h2>Admin screens</h2>
+  <ol start="7">
+    <li><a href="07-admin-login.html">Admin login</a> — <code>/admin/login</code></li>
+    <li><a href="08-post-dashboard.html">Post dashboard</a> — <code>/admin</code></li>
+    <li><a href="09-new-post.html">New post</a> — <code>/admin/new</code></li>
+    <li><a href="10-edit-post.html">Edit post</a> — <code>/admin/posts/{id}/edit</code></li>
+    <li><a href="11-comment-moderation.html">Comment moderation</a> — <code>/admin/comments</code></li>
+    <li><a href="12-series-management.html">Series management</a> — <code>/admin/series</code></li>
+  </ol>
+</main>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<header class="header">
+  <div class="nav">
+    <a class="brand" href="01-home.html">quizas</a>
+    <div class="nav-right">
+      <a href="01-home.html">Home</a>
+      <a href="05-series-index.html">Series</a>
+      <button aria-label="Menu" onclick="document.getElementById('m').classList.toggle('open')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="menu" id="m"><a href="08-post-dashboard.html">Admin</a></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Home / post list (<code>/</code>)</h3>
+    <ul>
+      <li>The entry screen: published posts, newest first.</li>
+      <li>Made of the site header (wordmark · Home · Series · Admin menu) and the body's site title/subtitle plus the post card list.</li>
+      <li>Each card carries a meta row (category · publish date · reading time <code>N min</code>), title, excerpt, and tags.</li>
+      <li>Drafts are never shown (§5.1).</li>
+      <li>When there are none: "No posts published yet."</li>
+    </ul>
+  </aside>
+
+  <header>
+    <h1>quizas</h1>
+    <p class="subtitle">Notes from a developer and a person.</p>
+  </header>
+
+  <div class="list">
+    <article class="card">
+      <div class="meta">
+        <a class="chip" href="03-category-archive.html">개발</a>
+        <time datetime="2026-07-04">2026-07-04</time><span>· 6 min</span>
+      </div>
+      <h2><a href="02-post-detail.html">본문 이미지 업로드를 MinIO로 옮긴 이야기</a></h2>
+      <p class="excerpt">커버 이미지를 걷어내고, 본문에 붙여넣기·드래그로 이미지를 올리는 흐름을 MinIO 위에 다시 세웠습니다.</p>
+      <div class="tags"><a href="04-tag-archive.html">#MinIO</a> <a href="04-tag-archive.html">#Next.js</a></div>
+    </article>
+
+    <article class="card">
+      <div class="meta">
+        <a class="chip" href="03-category-archive.html">일상</a>
+        <time datetime="2026-06-21">2026-06-21</time><span>· 3 min</span>
+      </div>
+      <h2><a href="02-post-detail.html">홈서버를 k3s로 다시 세웠다</a></h2>
+      <p class="excerpt">단일 VM에서 2노드 k3s로. 집에서 굴리는 클러스터의 소박한 즐거움에 대하여.</p>
+      <div class="tags"><a href="04-tag-archive.html">#homelab</a> <a href="04-tag-archive.html">#k3s</a></div>
+    </article>
+  </div>
+</main>
+</body>
+</html>

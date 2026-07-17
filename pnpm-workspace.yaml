@@ -1,0 +1,23 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# --- Supply-chain hardening (pnpm 11) ---------------------------------------
+# Install/build scripts are BLOCKED by default. Only packages set to `true` here
+# may run them (key is `allowBuilds` in pnpm 11, not the old `onlyBuiltDependencies`
+# list). Both below are legitimate native-binary builds:
+#   sharp         - native image processing, used by Next.js image optimization
+#   unrs-resolver - native module resolver, pulled in by eslint-config-next
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+
+# minimumReleaseAge: refuse versions published less than N minutes ago — mitigates
+# "compromised version published hours ago" attacks. Disabled for now because this
+# freshly-scaffolded project pins bleeding-edge versions a multi-day window can't
+# satisfy yet (e.g. @types/node@26.0.0 is <3 days old). Re-enable once versions
+# have aged, optionally with minimumReleaseAgeExclude for fast-moving reputable deps.
+# minimumReleaseAge: 4320

@@ -1,0 +1,35 @@
+# Spectral ruleset for the OpenAPI contract in api/openapi.yaml.
+#
+# Complements validate.py: validate.py checks the API against the OTHER design
+# artifacts (glossary, domain, wireframe) and the Prisma schema; Spectral lints
+# the OpenAPI document on its own for correctness and house style.
+#
+# Run from the design/ dir:
+#   npm run lint          # -> spectral lint api/openapi.yaml
+#
+extends: ["spectral:oas"]
+
+rules:
+  # Built-in OpenAPI rules kept, plus a few tightened to this project's
+  # conventions (every operation in the contract carries all of these).
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-tag-defined: error
+
+  operation-summary-required:
+    description: Every operation must have a summary.
+    severity: error
+    given: "$.paths[*][get,put,post,patch,delete,options,head,trace]"
+    then:
+      field: summary
+      function: truthy
+
+  operation-tags-required:
+    description: Every operation must declare at least one tag.
+    severity: error
+    given: "$.paths[*][get,put,post,patch,delete,options,head,trace]"
+    then:
+      field: tags
+      function: length
+      functionOptions:
+        min: 1

@@ -1,0 +1,155 @@
+/* wireframe.css — shared bare-wireframe styles for every screen mockup.
+   Local & relative (no remote/CDN), so screens stay offline/CSP-friendly.
+   Rules: one hairline gray border for all frames/dividers, system font, a
+   single foreground/background pair, auto light/dark. No colour (except the
+   blue annotation note), hover, shadow, or radius. */
+
+/* ---------- Reset & base ---------- */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #111;
+  background: #fff;
+  line-height: 1.7;
+}
+@media (prefers-color-scheme: dark) {
+  body { color: #eee; background: #111; }
+}
+
+a { color: inherit; }
+
+/* ---------- Layout ---------- */
+.wrap { max-width: 672px; margin: 0 auto; padding: 3rem 1.5rem; }
+
+/* ---------- Typography ---------- */
+h1 { font-size: 1.6rem; font-weight: 700; margin: .6rem 0; }
+h2 { font-size: 1.15rem; margin: .3rem 0; }
+.muted { opacity: .7; }
+
+ol { padding-left: 1.25rem; }
+li { margin: .55rem 0; }
+
+code { border: 1px solid gray; padding: 0 .25em; font-family: ui-monospace, monospace; font-size: .9em; }
+
+/* ---------- Form controls ---------- */
+.field, button, input, select, textarea {
+  border: 1px solid gray; background: transparent; color: inherit; font: inherit; padding: .5rem .75rem;
+}
+button { cursor: pointer; width: auto; padding: .3rem .7rem; }
+input, select, textarea { width: 100%; }
+
+/* ---------- Annotation note — the one splash of colour, marking meta-commentary (not UI). ---------- */
+.note { border: 1px solid #2563eb; color: #2563eb; padding: .9rem 1.1rem; margin-bottom: 2rem; font-size: .85rem; line-height: 1.6; }
+@media (prefers-color-scheme: dark) { .note { border-color: #7ab8ff; color: #7ab8ff; } }
+.note a { color: inherit; text-decoration: underline; }
+.note h3 { font-size: .9rem; margin: .5rem 0; }
+.note ul { margin: .4rem 0 0; padding-left: 1.15rem; }
+.note li { margin: .3rem 0; }
+.note code { border: 1px solid currentColor; padding: 0 .25em; }
+
+/* ---------- Site header / nav ---------- */
+.header { border-bottom: 1px solid gray; }
+.nav { max-width: 672px; margin: 0 auto; padding: .8rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: .9rem; }
+.brand { font-weight: 700; text-decoration: none; }
+.nav-right { display: flex; gap: 1rem; align-items: center; position: relative; }
+.nav-right a { text-decoration: none; }
+.nav button { padding: .2rem .4rem; line-height: 0; }
+.menu { position: absolute; right: 0; top: 1.8rem; border: 1px solid gray; background: inherit; display: none; }
+.menu.open { display: block; }
+.menu a { display: block; padding: .4rem .9rem; white-space: nowrap; text-decoration: none; }
+
+/* ---------- Post lists / cards (home, category, tag archives) ---------- */
+.back { font-size: .875rem; opacity: .7; text-decoration: none; }
+.eyebrow { font-size: .75rem; opacity: .7; text-transform: uppercase; letter-spacing: .05em; margin-top: 2rem; }
+.desc { opacity: .7; }
+.subtitle { opacity: .7; margin-bottom: 2rem; }
+.list { margin-top: 2.5rem; }
+.card { margin-bottom: 2rem; }
+.card h2 a { text-decoration: none; }
+.meta { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; font-size: .8rem; opacity: .7; }
+.chip { border: 1px solid gray; padding: .05rem .5rem; font-size: .75rem; text-decoration: none; }
+.excerpt { opacity: .7; font-size: .95rem; margin: .25rem 0 0; }
+.tags { display: flex; flex-wrap: wrap; gap: .6rem; font-size: .8rem; opacity: .7; margin-top: .5rem; }
+.tags a { text-decoration: none; }
+
+/* ---------- Post detail ---------- */
+article:not(.card) > .meta { margin-top: 2rem; }   /* post-detail: space below the back link */
+.banner { border: 1px solid gray; padding: .6rem .9rem; font-size: .875rem; text-decoration: none; display: block; margin: 1.5rem 0; }
+.body h2 { font-size: 1.25rem; margin-top: 1.75rem; }
+.body pre, .body code { border: 1px solid gray; font-family: ui-monospace, monospace; font-size: .85rem; }
+.body code { padding: 0 .25em; }
+.body pre { padding: .75rem; overflow-x: auto; }
+.body pre code { border: none; padding: 0; }
+.comments { border-top: 1px solid gray; margin-top: 3rem; padding-top: 1.5rem; }
+.comment { padding: 1rem 0; border-top: 1px solid gray; }
+.comment.reply { margin-left: 1.25rem; }
+.flash { border: 1px solid gray; padding: .5rem .9rem; font-size: .875rem; margin: 1rem 0; }
+
+/* comment/moderation heads share .chead + .name */
+.chead { display: flex; gap: .5rem; align-items: baseline; font-size: .8rem; opacity: .7; }
+.chead .name { opacity: 1; font-weight: 600; font-size: .9rem; }
+
+/* ---------- Forms (comment form, post editor, series create) ---------- */
+.form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.row { display: flex; gap: .75rem; }
+.w24 { width: 6rem; flex: none; }
+.btn { border: 1px solid gray; padding: .55rem 1rem; }
+.comments .btn { align-self: flex-end; }        /* post-detail: right-aligned "Post comment" */
+.form > button:not(.btn) { align-self: flex-end; } /* series create: right-aligned "Add series" */
+@media (max-width: 520px) { .row { flex-direction: column; } .w24 { width: 100%; } }
+
+/* ---------- Series index / detail ---------- */
+.item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-top: 1px solid gray; }
+.item:has(> p) { display: block; }                 /* series-index rows stack title/count/desc */
+.item:has(> p):first-of-type { border-top: none; }
+.item a { font-weight: 600; text-decoration: none; }
+.item p { opacity: .7; font-size: .9rem; margin: .35rem 0 0; }
+.count { opacity: .7; font-size: .8rem; margin-left: .5rem; }
+.total { opacity: .7; font-size: .8rem; margin-top: .5rem; }
+.entry { display: flex; gap: 1rem; padding: 1rem 0; border-top: 1px solid gray; }
+.entry a { text-decoration: none; font-weight: 600; }
+.entry .sub { opacity: .7; font-size: .8rem; margin-top: .2rem; }
+.idx { opacity: .7; font-variant-numeric: tabular-nums; min-width: 1.5rem; text-align: right; }
+
+/* ---------- Admin toolbars ---------- */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.toolbar h1 { font-size: 1.5rem; margin: 0; }
+.actions { display: flex; gap: 1rem; align-items: center; font-size: .85rem; opacity: .9; }
+.actions a { text-decoration: none; }
+
+/* ---------- Post dashboard rows ---------- */
+.info { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+.pill { border: 1px solid gray; font-size: .7rem; padding: .05rem .5rem; white-space: nowrap; }
+.cat, time { opacity: .7; font-size: .8rem; white-space: nowrap; }
+.title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ops { display: flex; gap: .6rem; font-size: .85rem; margin-top: .6rem; white-space: nowrap; }
+.item:has(.info) .ops { margin-top: 0; }           /* dashboard row: vertically centered */
+.ops a { font-weight: 400; }
+
+/* ---------- Post editor (new / edit) ---------- */
+.editor { border: 1px solid gray; }
+.editor-bar { display: flex; align-items: center; gap: .5rem; padding: .5rem; border-bottom: 1px solid gray; font-size: .8rem; }
+.seg button { border: 1px solid gray; padding: .2rem .6rem; font-size: .8rem; }
+.seg button.active { font-weight: 700; text-decoration: underline; }
+.img-btn { border: 1px solid gray; padding: .2rem .6rem; font-size: .8rem; }
+textarea.body { border: none; padding: .75rem; font-family: ui-monospace, monospace; font-size: .9rem; min-height: 15rem; resize: vertical; }
+.preview { padding: .75rem; min-height: 15rem; display: none; }
+.delete-zone { margin-top: 1rem; border-top: 1px solid gray; padding-top: 1rem; }
+
+/* ---------- Comment moderation ---------- */
+.tabs { display: flex; gap: .5rem; margin: 1.5rem 0; }
+.tab { border: 1px solid gray; font-size: .8rem; padding: .25rem .8rem; text-decoration: none; }
+.tab.active { font-weight: 700; }
+.content { margin: .4rem 0; white-space: pre-wrap; }
+.src { font-size: .8rem; opacity: .7; }
+.src a { text-decoration: none; }
+
+/* ---------- Series management ---------- */
+.help { font-size: .75rem; opacity: .7; margin-top: 1.5rem; line-height: 1.6; }
+
+/* ---------- Admin login ---------- */
+.home { display: inline-block; margin-top: 1.5rem; font-size: .875rem; opacity: .7; text-decoration: none; }
+.wrap:has(.home) { max-width: 24rem; padding: 4rem 1.5rem; }        /* narrow login column */
+.wrap:has(.home) .btn { display: block; width: 100%; text-align: center; padding: .65rem 1rem; }

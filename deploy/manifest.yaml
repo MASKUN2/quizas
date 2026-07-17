@@ -1,0 +1,124 @@
+# quizas 블로그 — web(공개 quizas.jwih.org) + api(클러스터 내부 전용).
+# 이미지 이름은 짧게(quizas-web/api) 두고, kustomization.yaml 의 images: 변환기가
+# ghcr.io/maskun2/... + commit sha 태그로 치환한다(CI 가 태그를 bump).
+# 시크릿(quizas-web-env, quizas-api-env)은 .env 에서 생성, 미커밋 → GitOps 관리 대상 아님.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quizas-api
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: quizas-api }
+  template:
+    metadata:
+      labels: { app: quizas-api }
+    spec:
+      nodeSelector:
+        role: apps
+      containers:
+        - name: api
+          image: quizas-api
+          imagePullPolicy: IfNotPresent   # sha 태그는 불변이라 캐시 재사용 안전
+          ports:
+            - containerPort: 4000
+          env:
+            - { name: PORT, value: "4000" }
+          envFrom:
+            - secretRef:
+                name: quizas-api-env   # DATABASE_URL, ADMIN_TOKEN
+          readinessProbe:
+            tcpSocket: { port: 4000 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: 4000 }
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests: { cpu: "50m", memory: "192Mi" }
+            limits: { cpu: "1", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quizas-api
+  namespace: apps
+spec:
+  selector: { app: quizas-api }
+  ports:
+    - name: http
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quizas-web
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: quizas-web }
+  template:
+    metadata:
+      labels: { app: quizas-web }
+    spec:
+      nodeSelector:
+        role: apps
+      containers:
+        - name: web
+          image: quizas-web
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - { name: API_URL, value: "http://quizas-api:4000" }
+          envFrom:
+            - secretRef:
+                name: quizas-web-env   # AUTH_*, ADMIN_TOKEN
+          readinessProbe:
+            tcpSocket: { port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket: { port: 3000 }
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests: { cpu: "50m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quizas-web
+  namespace: apps
+spec:
+  selector: { app: quizas-web }
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: quizas-web
+  namespace: apps
+  annotations:
+    # apps 네임스페이스 공용 미들웨어(X-Forwarded-Proto: https). webhome.yaml(homelab)에서 정의됨.
+    traefik.ingress.kubernetes.io/router.middlewares: apps-forwarded-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: quizas.jwih.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: quizas-web
+                port: { number: 80 }

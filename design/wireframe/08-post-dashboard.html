@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage posts · quizas</title>
+<link rel="stylesheet" href="wireframe.css">
+</head>
+<body>
+<main class="wrap">
+  <aside class="note">
+    <a href="index.html">← UI screens</a>
+    <h3>This screen — Post dashboard (<code>/admin</code>)</h3>
+    <ul>
+      <li>The author's home for managing all posts, drafts included (§4.1).</li>
+      <li>The toolbar has the title and quick links (View site · Series · Comments · New post · Log out).</li>
+      <li>Each row has a status label (Published/Draft), category, publish date, title, and View · Edit · Delete actions.</li>
+      <li>When there are none: "No posts yet."</li>
+    </ul>
+  </aside>
+
+  <div class="toolbar">
+    <h1>Manage posts</h1>
+    <div class="actions">
+      <a href="01-home.html">View site</a>
+      <a href="12-series-management.html">Series</a>
+      <a href="11-comment-moderation.html">Comments</a>
+      <a href="09-new-post.html"><button type="button">New post</button></a>
+      <button type="button">Log out</button>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem">
+    <div class="item">
+      <div class="info">
+        <span class="pill">Published</span><span class="cat">개발</span><time>2026-07-04</time>
+        <span class="title">본문 이미지 업로드를 MinIO로 옮긴 이야기</span>
+      </div>
+      <div class="ops"><a href="02-post-detail.html">View</a><a href="10-edit-post.html">Edit</a><button type="button">Delete</button></div>
+    </div>
+    <div class="item">
+      <div class="info">
+        <span class="pill">Draft</span><span class="cat">에세이</span><time>—</time>
+        <span class="title">아직 제목을 못 정한 글</span>
+      </div>
+      <div class="ops"><a href="02-post-detail.html">View</a><a href="10-edit-post.html">Edit</a><button type="button">Delete</button></div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

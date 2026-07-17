@@ -1,0 +1,111 @@
+// quizas blog — domain model
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Post (aggregate root) ───────────────────────────────────────────────────
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Post {
+  id          String     @id @default(cuid())
+  slug        String     @unique // URL identifier, e.g. /posts/<slug>
+  title       String
+  excerpt     String? // short summary for list views
+  content     String // markdown body
+  status      PostStatus @default(DRAFT)
+  publishedAt DateTime? // set when first published
+  readingTime Int? // minutes, computed on save
+  viewCount   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // a post belongs to exactly one category (개발 / 일상 / 에세이 …)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  // a post may belong to a series (optional)
+  seriesId    String?
+  series      Series? @relation(fields: [seriesId], references: [id])
+  seriesOrder Int? // position within the series
+
+  // cross-cutting topics (many-to-many)
+  tags     Tag[]     @relation("PostTags")
+  comments Comment[]
+
+  @@index([status, publishedAt]) // listing published posts, newest first
+  @@index([categoryId])
+  @@index([seriesId])
+}
+
+// ─── Taxonomy ────────────────────────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts Post[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  posts Post[] @relation("PostTags")
+}
+
+model Series {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts Post[]
+}
+
+// ─── Comments (reader engagement, moderated) ─────────────────────────────────
+
+enum CommentStatus {
+  PENDING // awaiting moderation
+  APPROVED
+  SPAM
+}
+
+model Comment {
+  id          String        @id @default(cuid())
+  content     String
+  authorName  String
+  authorEmail String? // not exposed publicly; for notifications/moderation
+  status      CommentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // threaded replies (self-relation)
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  @@index([postId, status])
+  @@index([parentId])
+}

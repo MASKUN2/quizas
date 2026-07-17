@@ -1,0 +1,15 @@
+{
+  "name": "quizas-design",
+  "version": "1.0.0",
+  "private": true,
+  "description": "quizas design surface; OpenAPI contract linted with Spectral, cross-artifact consistency checked with validate.py.",
+  "scripts": {
+    "validate": "python3 validate.py",
+    "conformance": "python3 conformance.py",
+    "lint": "spectral lint api/openapi.yaml --ruleset api/.spectral.yaml",
+    "check": "npm run validate && npm run lint"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "^6.16.1"
+  }
+}
