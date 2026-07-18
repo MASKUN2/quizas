@@ -14,7 +14,7 @@
     <ul>
       <li>Edits every field of an existing post, prefilled (§4.1).</li>
       <li>Same layout as "New post" but with values filled in.</li>
-      <li>Autosave applies only while the post is a draft; a published post (like this one) is not autosaved — its edits take effect only on an explicit Save, so the indicator stays silent (§4.1, §7.5).</li>
+      <li>Autosave applies to drafts and published posts alike; it never changes publication state. For a published post (like this one) an autosaved edit goes live immediately, so the indicator reads "saved & live at HH:MM" (§4.1, §7.5).</li>
       <li>A "Delete this post" button sits below, separated by a top border; deleting opens a confirm dialog first (§7.5 Confirm dialog).</li>
       <li>On save, a published post redirects to its public page; a Hangul slug must be <code>encodeURIComponent</code>-encoded in the redirect to avoid a header error (the earlier 500 cause).</li>
     </ul>

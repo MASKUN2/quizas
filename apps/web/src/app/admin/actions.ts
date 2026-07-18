@@ -89,13 +89,13 @@ export async function savePost(formData: FormData) {
 }
 
 /**
- * Draft autosave, called periodically from the client editor (not a form
- * submit) — returns a result instead of redirecting. Only ever writes DRAFTs:
- * on create it forces status=DRAFT; on update it omits `status` entirely so a
- * save never changes a post's publication state (the client only invokes this
- * for new/draft posts, never for a published one).
+ * Autosave, called periodically from the client editor (not a form submit) —
+ * returns a result instead of redirecting. It never changes a post's
+ * publication state: on create it forces status=DRAFT; on update it omits
+ * `status` entirely. Runs for drafts and published posts alike — for a
+ * published post the content edit is saved to the live post immediately.
  */
-export async function autosaveDraft(formData: FormData): Promise<{
+export async function autosavePost(formData: FormData): Promise<{
   ok: boolean;
   id?: string;
   slug?: string;

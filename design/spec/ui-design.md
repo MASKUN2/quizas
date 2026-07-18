@@ -87,10 +87,11 @@ These are the recurring building blocks; reuse them rather than inventing new on
   dialog can be dismissed (cancel, escape, or clicking outside) without acting,
   and only the explicit confirm carries the action out. Used wherever a delete
   affordance appears ([§4.1](./functional.md#41-posts-author)).
-- **Autosave indicator** — while drafting, a quiet muted line near the save
-  control reflects autosave state (*saving… / saved at HH:MM:SS / save failed*).
-  It never competes with the content and is shown only where autosave is active
-  (drafts), staying silent otherwise ([§4.1](./functional.md#41-posts-author)).
+- **Autosave indicator** — a quiet muted line near the save control reflects
+  autosave state (*saving… / saved at HH:MM / save failed*). For a **published**
+  post, where an autosaved edit goes live immediately, it reads *saved & live at
+  HH:MM* to make that plain. It never competes with the content
+  ([§4.1](./functional.md#41-posts-author)).
 
 ## 7.6 Copy & microcopy
 - **All UI copy is English**, in a plain, friendly register. **User content and
