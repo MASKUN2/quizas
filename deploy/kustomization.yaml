@@ -8,7 +8,7 @@ resources:
 images:
 - name: quizas-api
   newName: ghcr.io/maskun2/quizas-api
-  newTag: fe7a6d6326e37297c5153bc613ec0f1a7fe62a06
+  newTag: b3bab38ffde740b17862df6124814da763a6d679
 - name: quizas-web
   newName: ghcr.io/maskun2/quizas-web
-  newTag: fe7a6d6326e37297c5153bc613ec0f1a7fe62a06
+  newTag: b3bab38ffde740b17862df6124814da763a6d679
