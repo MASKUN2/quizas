@@ -71,7 +71,9 @@ These are the recurring building blocks; reuse them rather than inventing new on
   in-progress placeholder marks the spot until it is replaced on success, or
   removed with an error flash on failure.
 - **Edit / preview toggle** — the body editor switches between raw Markdown and a
-  rendered preview, using the same renderer as the public post page.
+  rendered preview, using the same renderer as the public post page. The preview
+  occupies the **same height as the editor** and scrolls within that box, so
+  toggling never shifts the page.
 - **Back link** — a quiet "← 목록으로" affordance returning to the list.
 - **Author shortcut** — when the author is signed in, author-only affordances
   (e.g. an *Edit →* link on a published post's public page) appear inline and

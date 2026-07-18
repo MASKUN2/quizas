@@ -19,6 +19,8 @@ export function BodyEditor({
 }) {
   const [value, setValue] = useState(defaultValue);
   const [mode, setMode] = useState<'edit' | 'preview'>('edit');
+  // 미리보기로 전환할 때 편집 textarea 의 실제 높이를 그대로 물려줘 화면 점프를 없앤다.
+  const [previewHeight, setPreviewHeight] = useState<number | null>(null);
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -101,7 +103,10 @@ export function BodyEditor({
           </button>
           <button
             type="button"
-            onClick={() => setMode('preview')}
+            onClick={() => {
+              setPreviewHeight(taRef.current?.offsetHeight ?? null);
+              setMode('preview');
+            }}
             className={`px-3 py-1 ${mode === 'preview' ? 'bg-subtle font-medium' : 'text-muted'}`}
           >
             Preview
@@ -144,7 +149,10 @@ export function BodyEditor({
         className={`${field} font-mono ${mode === 'preview' ? 'hidden' : ''}`}
       />
       {mode === 'preview' ? (
-        <div className={`${field} min-h-40`}>
+        <div
+          className={`${field} overflow-y-auto ${previewHeight == null ? 'min-h-40' : ''}`}
+          style={previewHeight != null ? { height: previewHeight } : undefined}
+        >
           {value.trim() ? (
             <Markdown>{value}</Markdown>
           ) : (
