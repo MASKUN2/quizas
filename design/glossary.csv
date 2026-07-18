@@ -6,6 +6,7 @@ Series,시리즈,Domain,"An ordered collection of posts telling a longer story a
 Comment,댓글,Domain,"A reader's response attached to a published post. May reply to another comment (threaded). Always moderated."
 Draft,초안,Post state,"A post that has been saved but not published; private to the author."
 Published,발행,Post state,"A post visible to readers, with a publication timestamp."
+Autosave,자동저장,Interaction,"Automatic, periodic saving of a draft while writing (at most once a minute, only when something changed). Keeps the post a draft; never publishes. Not applied to already-published posts."
 Pending,대기,Comment state,"A submitted comment awaiting the author's moderation; the default state of every new comment. Invisible to the public."
 Approved,승인,Comment state,"A comment the author has approved; visible to the public on its post."
 Spam,스팸,Comment state,"A comment the author has marked as spam; hidden from the public."

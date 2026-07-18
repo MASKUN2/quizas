@@ -16,6 +16,7 @@
       <li>Title (required) · Excerpt (optional) · Category (required) · (series + order, shown only when series exist), the body editor, and status (Draft/Published).</li>
       <li>The editor's Edit | Preview toggle uses the same renderer as the public post.</li>
       <li>"Add image" uploads, then inserts <code>![](…)</code> at the cursor (§7.5).</li>
+      <li>Autosave: once title, body, and category are filled, the draft is saved automatically (~1 min, on change) and this page becomes the draft's edit page. A muted indicator by Save shows the state (§7.5 Autosave indicator).</li>
       <li>The toggle below is demonstrated with minimal JS.</li>
     </ul>
   </aside>
@@ -52,7 +53,10 @@
     </div>
 
     <select><option selected>Draft</option><option>Published</option></select>
-    <button class="btn" type="button">Save</button>
+    <div class="row">
+      <button class="btn" type="button">Save</button>
+      <span style="opacity:.7;font-size:.85rem;align-self:center">Saved at 14:32:07</span>
+    </div>
   </form>
 </main>
 

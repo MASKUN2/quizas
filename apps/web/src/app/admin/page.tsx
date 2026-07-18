@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { deletePost, logout } from './actions';
+import { logout } from './actions';
 import { getAllPosts } from '@/lib/api';
 import { isAuthed } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
+import { DeletePostButton } from '@/components/delete-post-button';
 
 export const metadata: Metadata = { title: 'Manage posts' };
 
@@ -69,22 +70,22 @@ export default async function AdminPage() {
               </div>
 
               <div className="flex shrink-0 items-center gap-3 text-sm">
-                <Link
-                  href={`/posts/${post.slug}`}
-                  className="text-muted hover:underline"
-                >
-                  View
-                </Link>
+                {/* A draft has no public page (it 404s), so only published posts get View. */}
+                {post.status === 'PUBLISHED' ? (
+                  <Link
+                    href={`/posts/${post.slug}`}
+                    className="text-muted hover:underline"
+                  >
+                    View
+                  </Link>
+                ) : null}
                 <Link
                   href={`/admin/posts/${post.id}/edit`}
                   className="text-muted hover:underline"
                 >
                   Edit
                 </Link>
-                <form action={deletePost}>
-                  <input type="hidden" name="id" value={post.id} />
-                  <button className="text-red-600 hover:underline">Delete</button>
-                </form>
+                <DeletePostButton id={post.id} />
               </div>
             </li>
           ))}

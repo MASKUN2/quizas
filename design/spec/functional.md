@@ -7,7 +7,16 @@ Part of the [quizas specification](./README.md).
   summary, optional tags, optional series + position.
 - Save a post as a **draft** or **publish** it.
 - Edit any field of an existing post, including changing its publication state.
-- Delete a post.
+- **Autosave a draft while writing.** For a new post or a draft being edited, the
+  editor persists changes automatically — at most once a minute, and only when
+  something changed since the last save — so in-progress writing survives an
+  accidental navigation or reload. Autosave always keeps the post a **draft**;
+  publishing is only ever an explicit action. A **published** post is *not*
+  autosaved (its edits would otherwise go live half-finished) — its changes take
+  effect only on an explicit save. The editor shows the current autosave state
+  ([§7.5](./ui-design.md#75-shared-ui-patterns)).
+- Delete a post, **confirmed via a modal dialog** so it never fires on a stray
+  click ([§7.5](./ui-design.md#75-shared-ui-patterns)).
 - View a list of **all** posts — drafts included — with their current state
   clearly distinguished.
 - **Jump straight from a published post's public page to its editor** while

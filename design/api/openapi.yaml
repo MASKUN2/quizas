@@ -115,6 +115,9 @@ paths:
       tags: [posts]
       summary: Create a post
       operationId: createPost
+      description: >
+        Also reused by the editor's draft autosave: the first autosave of a new
+        post creates it as a DRAFT, after which autosave switches to updatePost.
       security:
         - bearerAuth: []
       requestBody:
@@ -160,6 +163,9 @@ paths:
       tags: [posts]
       summary: Update a post
       operationId: updatePost
+      description: >
+        Also reused by the editor's draft autosave, which omits `status` so a
+        save never changes the post's publication state.
       security:
         - bearerAuth: []
       requestBody:

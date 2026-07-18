@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { deletePost, updatePost } from '../../../actions';
+import { savePost } from '../../../actions';
 import { getAdminPost, getCategories, getSeriesList } from '@/lib/api';
 import { isAuthed } from '@/lib/auth';
 import { BodyEditor } from '@/components/body-editor';
+import { DeletePostButton } from '@/components/delete-post-button';
+import { Autosave } from '@/components/autosave';
 
 export const metadata: Metadata = { title: 'Edit post' };
 
@@ -41,7 +43,7 @@ export default async function EditPostPage({
         </p>
       ) : null}
 
-      <form action={updatePost} className="mt-8 flex flex-col gap-4">
+      <form id="post-form" action={savePost} className="mt-8 flex flex-col gap-4">
         <input type="hidden" name="id" value={post.id} />
         <input
           name="title"
@@ -102,20 +104,28 @@ export default async function EditPostPage({
           <option value="PUBLISHED">Published</option>
         </select>
 
-        <button
-          type="submit"
-          className="rounded-md bg-strong px-3 py-2 text-strong-foreground hover:opacity-90"
-        >
-          Save
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-md bg-strong px-3 py-2 text-strong-foreground hover:opacity-90"
+          >
+            Save
+          </button>
+          <Autosave
+            formId="post-form"
+            initialId={post.id}
+            published={post.status === 'PUBLISHED'}
+          />
+        </div>
       </form>
 
-      <form action={deletePost} className="mt-4 border-t border-border pt-4">
-        <input type="hidden" name="id" value={post.id} />
-        <button className="text-sm text-red-600 hover:underline">
-          Delete this post
-        </button>
-      </form>
+      <div className="mt-4 border-t border-border pt-4">
+        <DeletePostButton
+          id={post.id}
+          label="Delete this post"
+          triggerClassName="text-sm text-red-600 hover:underline"
+        />
+      </div>
     </main>
   );
 }

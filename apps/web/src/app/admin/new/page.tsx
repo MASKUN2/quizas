@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createPost, logout } from '../actions';
+import { savePost, logout } from '../actions';
 import { getCategories, getSeriesList } from '@/lib/api';
 import { isAuthed } from '@/lib/auth';
 import { BodyEditor } from '@/components/body-editor';
+import { Autosave } from '@/components/autosave';
 
 export const metadata: Metadata = { title: 'New post' };
 
@@ -42,7 +43,10 @@ export default async function NewPostPage({
         </p>
       ) : null}
 
-      <form action={createPost} className="mt-8 flex flex-col gap-4">
+      <form id="post-form" action={savePost} className="mt-8 flex flex-col gap-4">
+        {/* Empty until autosave creates a draft; then it holds the draft id so a
+            manual Save updates that draft instead of creating a duplicate. */}
+        <input type="hidden" name="id" defaultValue="" />
         <input name="title" placeholder="Title" required className={field} />
         <input name="excerpt" placeholder="Excerpt (optional)" className={field} />
 
@@ -88,12 +92,15 @@ export default async function NewPostPage({
           <option value="PUBLISHED">Published</option>
         </select>
 
-        <button
-          type="submit"
-          className="rounded-md bg-strong px-3 py-2 text-strong-foreground hover:opacity-90"
-        >
-          Save
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-md bg-strong px-3 py-2 text-strong-foreground hover:opacity-90"
+          >
+            Save
+          </button>
+          <Autosave formId="post-form" published={false} />
+        </div>
       </form>
     </main>
   );

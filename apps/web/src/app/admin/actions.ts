@@ -23,9 +23,17 @@ export async function logout() {
   await signOut({ redirectTo: '/admin/login' });
 }
 
-export async function createPost(formData: FormData) {
+/**
+ * Explicit "Save" for both the new-post and edit-post forms. Branches on a
+ * hidden `id`: present → PATCH an existing post, absent → POST a new one.
+ * Unifying the two matters for autosave: once autosave has created a draft it
+ * fills the form's hidden `id`, so a later manual Save updates that same draft
+ * instead of creating a duplicate (which would also collide on the unique slug).
+ */
+export async function savePost(formData: FormData) {
   const token = await adminToken();
 
+  const id = String(formData.get('id') ?? '').trim();
   const seriesId = String(formData.get('seriesId') ?? '').trim();
   const seriesOrder = String(formData.get('seriesOrder') ?? '').trim();
   const payload: Record<string, unknown> = {
@@ -35,23 +43,39 @@ export async function createPost(formData: FormData) {
     categoryId: String(formData.get('categoryId') ?? ''),
     status: String(formData.get('status') ?? 'DRAFT'),
   };
-  if (seriesId) {
-    payload.seriesId = seriesId;
-    if (seriesOrder) payload.seriesOrder = Number(seriesOrder);
+
+  let res: Response;
+  if (id) {
+    // null detaches the post from any series; @IsOptional() permits null.
+    payload.seriesId = seriesId || null;
+    payload.seriesOrder = seriesId && seriesOrder ? Number(seriesOrder) : null;
+    res = await fetch(`${API_URL}/posts/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    });
+  } else {
+    if (seriesId) {
+      payload.seriesId = seriesId;
+      if (seriesOrder) payload.seriesOrder = Number(seriesOrder);
+    }
+    res = await fetch(`${API_URL}/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    });
   }
 
-  const res = await fetch(`${API_URL}/posts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-    cache: 'no-store',
-  });
-
   if (!res.ok) {
-    redirect('/admin/new?error=1');
+    redirect(id ? `/admin/posts/${id}/edit?error=1` : '/admin/new?error=1');
   }
   const post = await res.json();
   // A draft has no public page (it 404s), so land on the dashboard instead.
@@ -64,46 +88,84 @@ export async function createPost(formData: FormData) {
   );
 }
 
-export async function updatePost(formData: FormData) {
+/**
+ * Draft autosave, called periodically from the client editor (not a form
+ * submit) — returns a result instead of redirecting. Only ever writes DRAFTs:
+ * on create it forces status=DRAFT; on update it omits `status` entirely so a
+ * save never changes a post's publication state (the client only invokes this
+ * for new/draft posts, never for a published one).
+ */
+export async function autosaveDraft(formData: FormData): Promise<{
+  ok: boolean;
+  id?: string;
+  slug?: string;
+  reason?: string;
+}> {
   const token = await adminToken();
 
-  const id = String(formData.get('id') ?? '');
-  if (!id) redirect('/admin');
-
+  const id = String(formData.get('id') ?? '').trim();
+  const title = String(formData.get('title') ?? '').trim();
+  const content = String(formData.get('content') ?? '').trim();
+  const categoryId = String(formData.get('categoryId') ?? '').trim();
   const seriesId = String(formData.get('seriesId') ?? '').trim();
   const seriesOrder = String(formData.get('seriesOrder') ?? '').trim();
-  const payload: Record<string, unknown> = {
-    title: String(formData.get('title') ?? ''),
-    content: String(formData.get('content') ?? ''),
-    excerpt: String(formData.get('excerpt') ?? '').trim() || undefined,
-    categoryId: String(formData.get('categoryId') ?? ''),
-    status: String(formData.get('status') ?? 'DRAFT'),
-    // null detaches the post from any series; @IsOptional() permits null.
-    seriesId: seriesId || null,
-    seriesOrder: seriesId && seriesOrder ? Number(seriesOrder) : null,
-  };
+  const excerpt = String(formData.get('excerpt') ?? '').trim() || undefined;
 
-  const res = await fetch(`${API_URL}/posts/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-    cache: 'no-store',
-  });
+  try {
+    let res: Response;
+    if (id) {
+      // No `status` → publication state is left untouched.
+      const payload: Record<string, unknown> = {
+        title: String(formData.get('title') ?? ''),
+        content: String(formData.get('content') ?? ''),
+        excerpt,
+        categoryId,
+        seriesId: seriesId || null,
+        seriesOrder: seriesId && seriesOrder ? Number(seriesOrder) : null,
+      };
+      res = await fetch(`${API_URL}/posts/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+      });
+    } else {
+      // Create needs title, content, and category — until all three exist there
+      // is nothing valid to persist yet.
+      if (!title || !content || !categoryId) {
+        return { ok: false, reason: 'incomplete' };
+      }
+      const payload: Record<string, unknown> = {
+        title: String(formData.get('title') ?? ''),
+        content: String(formData.get('content') ?? ''),
+        excerpt,
+        categoryId,
+        status: 'DRAFT',
+      };
+      if (seriesId) {
+        payload.seriesId = seriesId;
+        if (seriesOrder) payload.seriesOrder = Number(seriesOrder);
+      }
+      res = await fetch(`${API_URL}/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+      });
+    }
 
-  if (!res.ok) {
-    redirect(`/admin/posts/${id}/edit?error=1`);
+    if (!res.ok) return { ok: false, reason: `http_${res.status}` };
+    const post = await res.json();
+    return { ok: true, id: post.id, slug: post.slug };
+  } catch {
+    return { ok: false, reason: 'network' };
   }
-  const post = await res.json();
-  // Encode the slug (see createPost): a Hangul slug would otherwise crash the
-  // server-action redirect via an invalid x-action-redirect header character.
-  redirect(
-    post.status === 'PUBLISHED'
-      ? `/posts/${encodeURIComponent(post.slug)}`
-      : '/admin',
-  );
 }
 
 export async function deletePost(formData: FormData) {
