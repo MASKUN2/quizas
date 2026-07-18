@@ -16,7 +16,10 @@ Part of the [quizas specification](./README.md).
   effect only on an explicit save. The editor shows the current autosave state
   ([§7.5](./ui-design.md#75-shared-ui-patterns)).
 - Delete a post, **confirmed via a modal dialog** so it never fires on a stray
-  click ([§7.5](./ui-design.md#75-shared-ui-patterns)).
+  click ([§7.5](./ui-design.md#75-shared-ui-patterns)). Deletion is a **soft
+  delete**: the post and its comments are hidden from every surface and its slug
+  is released, but the data is retained and recoverable from the database — it is
+  not a permanent erase ([§5.3](./policies.md#53-relationships--integrity)).
 - View a list of **all** posts — drafts included — with their current state
   clearly distinguished.
 - **Jump straight from a published post's public page to its editor** while

@@ -21,7 +21,10 @@ These are the non-negotiable rules. They hold regardless of how the system is bu
 ## 5.3 Relationships & integrity
 - A post must always have exactly one category.
 - A post's series membership is optional and may be detached without deleting the post.
-- Deleting a post deletes its comments.
+- Deleting a post is a **soft delete**: the post and its comments are hidden from
+  every public and admin surface and retained in the database (recoverable
+  there), and the post's slug is **released for reuse** ([§5.2](#52-identifiers)).
+  It is not a permanent erase.
 - Deleting a comment deletes its replies.
 - A reply may only attach to a comment **on the same post**.
 

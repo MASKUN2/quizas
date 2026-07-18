@@ -39,6 +39,7 @@ erDiagram
         int        seriesOrder "nullable"
         datetime   createdAt
         datetime   updatedAt
+        datetime   deletedAt "nullable, soft-delete marker"
     }
     CATEGORY {
         string   id PK

@@ -25,6 +25,7 @@ erDiagram
         int        seriesOrder "nullable"
         datetime   createdAt
         datetime   updatedAt
+        datetime   deletedAt "nullable, soft-delete marker"
     }
 ```
 
@@ -44,6 +45,7 @@ erDiagram
 | `categoryId` | string | — | FK → Category (**required**). |
 | `seriesId` | string | ✓ | FK → Series (optional). |
 | `seriesOrder` | int | ✓ | Position within the series (≥ 0). |
+| `deletedAt` | datetime | ✓ | Soft-delete marker; `null` = live. When set, the post is hidden everywhere and retained for recovery. |
 
 ## Relations
 
@@ -59,7 +61,12 @@ erDiagram
 - **Drafts are private** — never listed or reachable by a reader on any surface,
   including by direct slug ([§5.1](../spec/policies.md#51-content-visibility)).
 - Public listings are ordered newest-first by `publishedAt`.
-- Deleting a post cascades to its comments ([§5.3](../spec/policies.md#53-relationships--integrity)).
+- Deletion is a **soft delete**: `remove` sets `deletedAt` and rewrites the slug
+  to release it, rather than deleting the row. A post with `deletedAt` set is
+  excluded from every read (lists, detail, counts, series/category/tag pages) for
+  readers and the author alike, and its comments go with it. The `onDelete:
+  Cascade` on comments only matters if a row is ever physically purged
+  ([§5.3](../spec/policies.md#53-relationships--integrity)).
 
 ## Indexes
 

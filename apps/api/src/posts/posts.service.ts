@@ -43,6 +43,7 @@ export class PostsService {
 
   findAll(query: QueryPostsDto, isAdmin = false) {
     const where: Prisma.PostWhereInput = {
+      deletedAt: null, // soft-deleted posts are hidden from everyone, admin included
       // Non-admins only ever see published posts; any client-supplied
       // status filter is ignored so drafts can't leak.
       status: isAdmin ? query.status : PostStatus.PUBLISHED,
@@ -59,7 +60,7 @@ export class PostsService {
 
   async findOne(idOrSlug: string, isAdmin = false) {
     const post = await this.prisma.post.findFirst({
-      where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+      where: { deletedAt: null, OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
       include: {
         category: true,
         tags: true,
@@ -87,7 +88,9 @@ export class PostsService {
 
   async update(id: string, dto: UpdatePostDto) {
     const existing = await this.prisma.post.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException(`Post not found: ${id}`);
+    if (!existing || existing.deletedAt) {
+      throw new NotFoundException(`Post not found: ${id}`);
+    }
 
     const data: Prisma.PostUpdateInput = {
       ...(dto.title !== undefined && { title: dto.title }),
@@ -126,17 +129,21 @@ export class PostsService {
     });
   }
 
+  // Soft delete: mark the post deleted and release its unique slug (so the same
+  // slug can be reused by a new post) instead of removing the row. The post and
+  // its comments stay in the database, hidden everywhere and recoverable there.
   async remove(id: string) {
-    try {
-      await this.prisma.post.delete({ where: { id } });
-    } catch (err) {
-      if (
-        err instanceof Prisma.PrismaClientKnownRequestError &&
-        err.code === 'P2025'
-      ) {
-        throw new NotFoundException(`Post not found: ${id}`);
-      }
-      throw err;
+    const existing = await this.prisma.post.findUnique({ where: { id } });
+    if (!existing || existing.deletedAt) {
+      throw new NotFoundException(`Post not found: ${id}`);
     }
+    await this.prisma.post.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        // Append the (unique) id so the freed slug can't collide with anything.
+        slug: `${existing.slug}-deleted-${id}`,
+      },
+    });
   }
 }

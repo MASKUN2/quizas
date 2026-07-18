@@ -30,7 +30,9 @@ export class SeriesService {
   findAll() {
     return this.prisma.series.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { posts: true } } },
+      include: {
+        _count: { select: { posts: { where: { deletedAt: null } } } },
+      },
     });
   }
 
@@ -40,7 +42,7 @@ export class SeriesService {
       where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
       include: {
         posts: {
-          where: { status: 'PUBLISHED' },
+          where: { status: 'PUBLISHED', deletedAt: null },
           orderBy: [{ seriesOrder: 'asc' }, { publishedAt: 'asc' }],
           include: { category: true, tags: true },
         },
@@ -58,7 +60,9 @@ export class SeriesService {
         data: {
           ...(dto.title !== undefined && { title: dto.title }),
           ...(dto.slug !== undefined && { slug: slugify(dto.slug) }),
-          ...(dto.description !== undefined && { description: dto.description }),
+          ...(dto.description !== undefined && {
+            description: dto.description,
+          }),
         },
       });
     } catch (err) {

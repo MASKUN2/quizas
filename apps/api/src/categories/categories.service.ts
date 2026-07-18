@@ -30,14 +30,18 @@ export class CategoriesService {
   findAll() {
     return this.prisma.category.findMany({
       orderBy: { name: 'asc' },
-      include: { _count: { select: { posts: true } } },
+      include: {
+        _count: { select: { posts: { where: { deletedAt: null } } } },
+      },
     });
   }
 
   async findOne(idOrSlug: string) {
     const category = await this.prisma.category.findFirst({
       where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-      include: { _count: { select: { posts: true } } },
+      include: {
+        _count: { select: { posts: { where: { deletedAt: null } } } },
+      },
     });
     if (!category) {
       throw new NotFoundException(`Category not found: ${idOrSlug}`);

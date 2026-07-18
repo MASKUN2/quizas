@@ -14,8 +14,8 @@ export class CommentsService {
 
   /** Public submission: only on published posts, always PENDING. */
   async create(dto: CreateCommentDto) {
-    const post = await this.prisma.post.findUnique({
-      where: { id: dto.postId },
+    const post = await this.prisma.post.findFirst({
+      where: { id: dto.postId, deletedAt: null },
       select: { id: true, status: true },
     });
     if (!post || post.status !== 'PUBLISHED') {
@@ -28,7 +28,9 @@ export class CommentsService {
         select: { postId: true },
       });
       if (!parent || parent.postId !== dto.postId) {
-        throw new BadRequestException('Parent comment does not belong to this post');
+        throw new BadRequestException(
+          'Parent comment does not belong to this post',
+        );
       }
     }
 
@@ -59,7 +61,10 @@ export class CommentsService {
 
   async moderate(id: string, status: CommentStatus) {
     try {
-      return await this.prisma.comment.update({ where: { id }, data: { status } });
+      return await this.prisma.comment.update({
+        where: { id },
+        data: { status },
+      });
     } catch (err) {
       this.rethrow(err, id);
     }

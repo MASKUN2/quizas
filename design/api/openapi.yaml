@@ -186,7 +186,10 @@ paths:
       tags: [posts]
       summary: Delete a post
       operationId: deletePost
-      description: Cascades to the post's comments.
+      description: >
+        Soft delete: marks the post deleted (sets `deletedAt`) and releases its
+        slug for reuse. The post and its comments are hidden from every surface
+        but retained in the database (recoverable there) — not a permanent erase.
       security:
         - bearerAuth: []
       responses:
@@ -691,6 +694,10 @@ components:
           type: [integer, 'null']
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        deletedAt:
+          type: [string, 'null']
+          format: date-time
+          description: Soft-delete marker; always null in responses (deleted posts are never returned).
         category: { $ref: '#/components/schemas/Category' }
         tags:
           type: array

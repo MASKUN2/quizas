@@ -29,6 +29,7 @@ model Post {
   viewCount   Int        @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime? // soft-delete marker; null = live. Excluded from all reads.
 
   // a post belongs to exactly one category (기획 / 일상 / 에세이 …)
   categoryId String

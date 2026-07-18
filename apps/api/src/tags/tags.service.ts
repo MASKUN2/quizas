@@ -29,14 +29,18 @@ export class TagsService {
   findAll() {
     return this.prisma.tag.findMany({
       orderBy: { name: 'asc' },
-      include: { _count: { select: { posts: true } } },
+      include: {
+        _count: { select: { posts: { where: { deletedAt: null } } } },
+      },
     });
   }
 
   async findOne(idOrSlug: string) {
     const tag = await this.prisma.tag.findFirst({
       where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
-      include: { _count: { select: { posts: true } } },
+      include: {
+        _count: { select: { posts: { where: { deletedAt: null } } } },
+      },
     });
     if (!tag) throw new NotFoundException(`Tag not found: ${idOrSlug}`);
     return tag;
