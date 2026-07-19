@@ -16,13 +16,36 @@ function readingTimeMinutes(content: string): number {
 export class PostsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: CreatePostDto) {
+  // Build a unique slug from `base`: slugify it, then append -2, -3, … until it no
+  // longer collides with another post (excludeId lets a post keep its own slug).
+  // Checks all posts, incl. soft-deleted ones (whose slugs are `<slug>-deleted-<id>`).
+  private async uniqueSlug(base: string, excludeId?: string): Promise<string> {
+    const root = slugify(base) || 'post';
+    let candidate = root;
+    for (let n = 2; ; n++) {
+      const clash = await this.prisma.post.findFirst({
+        where: {
+          slug: candidate,
+          ...(excludeId ? { id: { not: excludeId } } : {}),
+        },
+        select: { id: true },
+      });
+      if (!clash) return candidate;
+      candidate = `${root}-${n}`;
+    }
+  }
+
+  async create(dto: CreatePostDto) {
     const status = dto.status ?? PostStatus.DRAFT;
     const data: Prisma.PostCreateInput = {
       title: dto.title,
       content: dto.content,
       excerpt: dto.excerpt,
-      slug: dto.slug ? slugify(dto.slug) : slugify(dto.title),
+      // Drafts carry no slug; a published post gets one derived from its title.
+      slug:
+        status === PostStatus.PUBLISHED
+          ? await this.uniqueSlug(dto.title)
+          : null,
       status,
       readingTime: readingTimeMinutes(dto.content),
       publishedAt: status === PostStatus.PUBLISHED ? new Date() : null,
@@ -99,7 +122,6 @@ export class PostsService {
         readingTime: readingTimeMinutes(dto.content),
       }),
       ...(dto.excerpt !== undefined && { excerpt: dto.excerpt }),
-      ...(dto.slug !== undefined && { slug: slugify(dto.slug) }),
       ...(dto.seriesOrder !== undefined && { seriesOrder: dto.seriesOrder }),
       ...(dto.categoryId !== undefined && {
         category: { connect: { id: dto.categoryId } },
@@ -122,6 +144,15 @@ export class PostsService {
       }
     }
 
+    // Slug is service-managed by the effective status: a published post's slug is
+    // (re)derived from its title and de-duplicated on collision (so editing the
+    // title changes the slug); a draft has no slug. Applies to autosave too.
+    const effectiveStatus = dto.status ?? existing.status;
+    data.slug =
+      effectiveStatus === PostStatus.PUBLISHED
+        ? await this.uniqueSlug(dto.title ?? existing.title, id)
+        : null;
+
     return this.prisma.post.update({
       where: { id },
       data,
@@ -142,7 +173,8 @@ export class PostsService {
       data: {
         deletedAt: new Date(),
         // Append the (unique) id so the freed slug can't collide with anything.
-        slug: `${existing.slug}-deleted-${id}`,
+        // A draft has no slug (null) — nothing to release, so leave it null.
+        slug: existing.slug ? `${existing.slug}-deleted-${id}` : null,
       },
     });
   }

@@ -23,10 +23,8 @@ export class CreatePostDto {
   @IsString()
   excerpt?: string;
 
-  /** URL slug; generated from the title when omitted. */
-  @IsOptional()
-  @IsString()
-  slug?: string;
+  // No slug field: the slug is service-managed (derived from the title on publish,
+  // suffix-deduped). Clients read the generated slug from the response.
 
   @IsOptional()
   @IsEnum(PostStatus)

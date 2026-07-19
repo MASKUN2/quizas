@@ -116,8 +116,10 @@ paths:
       summary: Create a post
       operationId: createPost
       description: >
-        Also reused by the editor's draft autosave: the first autosave of a new
-        post creates it as a DRAFT, after which autosave switches to updatePost.
+        Slug is service-managed: a DRAFT is created with no slug; a PUBLISHED post
+        gets a slug derived from its title, de-duplicated with a numeric suffix on
+        collision. Also reused by the editor's draft autosave: the first autosave
+        of a new post creates it as a DRAFT, after which autosave switches to updatePost.
       security:
         - bearerAuth: []
       requestBody:
@@ -164,8 +166,11 @@ paths:
       summary: Update a post
       operationId: updatePost
       description: >
-        Also reused by the editor's draft autosave, which omits `status` so a
-        save never changes the post's publication state.
+        Slug is service-managed by the resulting status: a PUBLISHED post's slug is
+        (re)generated from its title and suffix-deduped on collision, so editing the
+        title changes the slug; a DRAFT has its slug cleared to null. Also reused by
+        the editor's draft autosave, which omits `status` so a save never changes the
+        post's publication state.
       security:
         - bearerAuth: []
       requestBody:
@@ -672,10 +677,12 @@ components:
       type: object
       description: A post with its `category` and `tags` (and `series` when returned by create/update/get).
       required:
-        [id, slug, title, content, status, viewCount, createdAt, updatedAt, categoryId]
+        [id, title, content, status, viewCount, createdAt, updatedAt, categoryId]
       properties:
         id: { type: string }
-        slug: { type: string }
+        slug:
+          type: [string, 'null']
+          description: null while the post is a draft; set (from the title, suffix-deduped) on publish.
         title: { type: string }
         excerpt:
           type: [string, 'null']
@@ -770,7 +777,6 @@ components:
         title: { type: string, minLength: 1 }
         content: { type: string, minLength: 1, description: Markdown body }
         excerpt: { type: string }
-        slug: { type: string, description: Slugified server-side; falls back to the title. }
         status: { $ref: '#/components/schemas/PostStatus' }
         categoryId: { type: string }
         tagIds:
@@ -785,7 +791,6 @@ components:
         title: { type: string, minLength: 1 }
         content: { type: string, minLength: 1 }
         excerpt: { type: string }
-        slug: { type: string }
         status: { $ref: '#/components/schemas/PostStatus' }
         categoryId: { type: string }
         tagIds:

@@ -3,9 +3,14 @@
 Part of the [quizas specification](./README.md).
 
 ## 4.1 Posts (Author)
-- Create a post with: title, slug, Markdown body, category (required), optional
-  summary, optional tags, optional series + position.
+- Create a post with: title, Markdown body, category (required), optional
+  summary, optional tags, optional series + position. The **URL slug is not
+  entered by the author** — it is generated automatically (see below).
 - Save a post as a **draft** or **publish** it.
+- **The URL slug is service-managed.** A draft has **no slug**; on **publish** the
+  slug is generated from the title, and any collision is resolved by appending a
+  numeric suffix (`-2`, `-3`…). Editing a published post's title changes its slug
+  — and thus its public URL ([§5.2](./policies.md#52-identifiers)).
 - Edit any field of an existing post, including changing its publication state.
 - **Autosave while writing.** The editor persists changes automatically — at most
   once a minute, and only when something changed since the last save — so

@@ -13,10 +13,15 @@ These are the non-negotiable rules. They hold regardless of how the system is bu
 - Public listings are ordered newest-first by publication date.
 
 ## 5.2 Identifiers
-- Every post, category, tag, and series has a **unique, URL-safe slug**.
+- Every category, tag, and series has a **unique, URL-safe slug**. A post's slug
+  is **service-managed**: it is **absent while the post is a draft**, generated
+  from the title when the post is **published**, and **de-duplicated with a
+  numeric suffix** (`-2`, `-3`…) on collision.
 - Slugs may contain non-ASCII characters (e.g. Hangul). The system must handle
   them correctly end-to-end in URLs.
-- Attempting to reuse an existing slug is rejected.
+- A post's slug **can change when its title changes** (URL stability across edits
+  is not guaranteed for now). For **category, tag, and series**, attempting to
+  reuse an existing slug is **rejected**.
 
 ## 5.3 Relationships & integrity
 - A post must always have exactly one category.

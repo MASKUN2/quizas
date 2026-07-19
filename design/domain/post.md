@@ -12,7 +12,7 @@ erDiagram
 
     POST {
         string     id PK
-        string     slug UK
+        string     slug UK "nullable; null while draft, set on publish"
         string     title
         string     excerpt "nullable"
         string     content "markdown body"
@@ -34,7 +34,7 @@ erDiagram
 | Field | Type | Optional | Notes |
 |---|---|---|---|
 | `id` | string (cuid) | — | PK |
-| `slug` | string | — | **Unique**, URL-safe; may contain Hangul. |
+| `slug` | string | ✓ | **Unique** (nullable). `null` while draft; generated from the title on publish and suffix-deduped on collision. URL-safe; may contain Hangul. |
 | `title` | string | — | Required. |
 | `excerpt` | string | ✓ | Short summary for list views. |
 | `content` | string | — | Markdown; images embedded inline by reference. |
@@ -57,7 +57,10 @@ erDiagram
 ## Invariants & rules
 
 - A post always has **exactly one** category ([§5.3](../spec/policies.md#53-relationships--integrity)).
-- Slug is **unique** and URL-safe; reuse is rejected ([§5.2](../spec/policies.md#52-identifiers)).
+- Slug is **service-managed**: `null` while the post is a draft, generated from
+  the title on publish, and made **unique** by appending a numeric suffix on
+  collision (never rejected). It may change when the title changes
+  ([§5.2](../spec/policies.md#52-identifiers)).
 - **Drafts are private** — never listed or reachable by a reader on any surface,
   including by direct slug ([§5.1](../spec/policies.md#51-content-visibility)).
 - Public listings are ordered newest-first by `publishedAt`.
@@ -71,4 +74,4 @@ erDiagram
 ## Indexes
 
 `@@index([status, publishedAt])`, `@@index([categoryId])`, `@@index([seriesId])`;
-unique on `slug`.
+unique on `slug` (nullable — Postgres allows many `NULL`s, so drafts don't collide).

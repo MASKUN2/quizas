@@ -16,6 +16,7 @@
       <li>Title (required) · Excerpt (optional) · Category (required) · (series + order, shown only when series exist), the body editor, and status (Draft/Published).</li>
       <li>The editor's Edit | Preview toggle uses the same renderer as the public post; the preview keeps the editor's height and scrolls inside, so switching never jumps the page.</li>
       <li>"Add image" uploads, then inserts <code>![](…)</code> at the cursor (§7.5).</li>
+      <li>No slug field — the URL slug is service-managed: a draft has none; on publish it is generated from the title and suffix-deduped on collision (§5.2).</li>
       <li>Autosave: once title, body, and category are filled, the draft is saved automatically (~1 min, on change) and this page becomes the draft's edit page. A muted indicator by Save shows the state (§7.5 Autosave indicator).</li>
       <li>The toggle below is demonstrated with minimal JS.</li>
     </ul>

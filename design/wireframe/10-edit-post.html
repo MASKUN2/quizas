@@ -16,6 +16,7 @@
       <li>Same layout as "New post" but with values filled in.</li>
       <li>Autosave applies to drafts and published posts alike; it never changes publication state. For a published post (like this one) an autosaved edit goes live immediately, so the indicator reads "saved & live at HH:MM" (§4.1, §7.5).</li>
       <li>A "Delete this post" button sits below, separated by a top border; deleting opens a confirm dialog first (§7.5 Confirm dialog).</li>
+      <li>No slug field — the slug is service-managed. Editing a published post's title regenerates its slug (and public URL); reverting to draft clears it (§5.2).</li>
       <li>On save, a published post redirects to its public page; a Hangul slug must be <code>encodeURIComponent</code>-encoded in the redirect to avoid a header error (the earlier 500 cause).</li>
     </ul>
   </aside>

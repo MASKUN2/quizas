@@ -19,7 +19,7 @@ enum PostStatus {
 
 model Post {
   id          String     @id @default(cuid())
-  slug        String     @unique // URL identifier, e.g. /posts/<slug>
+  slug        String?    @unique // URL identifier, e.g. /posts/<slug>; null while draft, set on publish
   title       String
   excerpt     String? // short summary for list views
   content     String // markdown body

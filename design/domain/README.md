@@ -26,7 +26,7 @@ erDiagram
 
     POST {
         string     id PK
-        string     slug UK
+        string     slug UK "nullable; null while draft, set on publish"
         string     title
         string     excerpt "nullable"
         string     content "markdown"
